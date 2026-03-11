@@ -112,7 +112,7 @@ struct SplashView: View {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
                 showGreeting = true
             }
-            speaker.speak("Welcome to Starmy!")
+            speaker.playWelcomeToStarmy()
         }
     }
 }

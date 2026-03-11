@@ -189,19 +189,20 @@ struct HomeView: View {
                                    starType: String,
                                    mascotText: String, destination: HomeDestination,
                                    delay: Double, geo: GeometryProxy) -> some View {
-        ActivityCard(title: title, imageName: imageName,
-                     progress: progress, total: total,
-                     totalStars: AchievementStore.shared.totalStars(type: starType),
-                     geo: geo) {
-            showMascotFlip(text: mascotText)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.9) {
-                navigateTo = destination
+        let totalStars = starType == "draw" ? 0 : AchievementStore.shared.totalStars(type: starType)
+        return ActivityCard(title: title, imageName: imageName,
+                            progress: progress, total: total,
+                            totalStars: totalStars,
+                            geo: geo) {
+                showMascotFlip(text: mascotText)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.9) {
+                    navigateTo = destination
+                }
             }
-        }
-        .frame(width: cardWidth(geo), height: cardHeight(geo))
-        .scaleEffect(cardsVisible ? 1.0 : 0.75)
-        .opacity(cardsVisible ? 1.0 : 0)
-        .animation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay), value: cardsVisible)
+            .frame(width: cardWidth(geo), height: cardHeight(geo))
+            .scaleEffect(cardsVisible ? 1.0 : 0.75)
+            .opacity(cardsVisible ? 1.0 : 0)
+            .animation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay), value: cardsVisible)
     }
 
     private func cardWidth(_ geo: GeometryProxy) -> CGFloat {
@@ -223,7 +224,13 @@ struct HomeView: View {
 
     private func showMascotFlip(text: String) {
         bubbleText = text
-        speaker.speak(text)
+        if text == "Trace A to Z! Uppercase & lowercase!" {
+            speaker.playTraceAToZUppercaseLowercase()
+        } else if text == "Let's draw! Pick up your brush!" {
+            speaker.playLetsDrawPickUpYourBrush()
+        } else {
+            speaker.speak(text)
+        }
 
         // Step 1: Move mascot to center and scale up
         withAnimation(.spring(response: 0.55, dampingFraction: 0.7)) {

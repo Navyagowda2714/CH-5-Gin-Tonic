@@ -23,8 +23,6 @@ struct DrawActivity {
         DrawActivity(imageName: "apple", word: "APPLE"),
         DrawActivity(imageName: "star",  word: "STAR"),
         DrawActivity(imageName: "book",  word: "BOOK"),
-        DrawActivity(imageName: "cup",   word: "CUP"),
-        DrawActivity(imageName: "dog",   word: "DOG"),
     ]
 }
 
@@ -68,7 +66,6 @@ struct LetsDrawView: View {
     @State private var lastMilestone = 0
     @State private var mascotSpeech: String? = nil
     @State private var showMascotSpeech = false
-    @State private var earnedStars = 0
     @State private var showLeaveAlert = false
 
     private var activity: DrawActivity { DrawActivity.all[activityIndex] }
@@ -94,7 +91,6 @@ struct LetsDrawView: View {
                         word: activity.word,
                         imageName: activity.imageName,
                         modelName: activity.modelName,
-                        stars: earnedStars,
                         geo: geo,
                         isLastActivity: activityIndex == DrawActivity.all.count - 1
                     ) {
@@ -136,7 +132,7 @@ struct LetsDrawView: View {
                             Color.clear.frame(width: 44, height: 44)
                         }
                         .padding(.horizontal, geo.size.width * 0.04)
-                        .padding(.top, geo.size.height * 0.02)
+                        .padding(.top, max(appTopSafeInset() + 8, geo.size.height * 0.02))
                         .padding(.bottom, geo.size.height * 0.01)
 
                         Image(activity.imageName)
@@ -388,14 +384,6 @@ struct LetsDrawView: View {
             .frame(width: cardW, height: cardH)
             .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
 
-            if coveragePercent < 0.08 {
-                Text("DRAW!")
-                    .font(.app(size: min(min(geo.size.width, geo.size.height) * 0.05, 36)))
-                    .foregroundStyle(Color(red: 0.75, green: 0.62, blue: 0.48).opacity(0.55))
-                    .opacity(Double(max(0, 1.0 - coveragePercent / 0.08)))
-                    .allowsHitTesting(false)
-            }
-
             if coveragePercent > 0.02 && !isComplete {
                 ProgressRing(progress: min(coveragePercent, 1.0))
                     .frame(width: 50, height: 50)
@@ -484,12 +472,19 @@ struct LetsDrawView: View {
                 let milestoneMessages = ["Keep going!", "Halfway there!", "Almost done!"]
                 let msg = milestoneMessages[min(milestone - 1, 2)]
                 showMascotMessage(msg)
-                speaker.speak(msg)
+                switch milestone {
+                case 1:
+                    speaker.playKeepGoing()
+                case 2:
+                    speaker.playHalfwayThere()
+                case 3:
+                    speaker.playAlmostDone()
+                default:
+                    speaker.speak(msg)
+                }
             }
 
             if pct >= 0.80 && !isComplete {                isComplete = true
-                earnedStars = AchievementStore.drawStars(coverage: pct)
-                AchievementStore.shared.setStars(activity: activity.imageName, type: "draw", stars: earnedStars)
                 SoundPlayer.shared.play(.success)
                 #if os(iOS)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -831,7 +826,6 @@ private struct RewardView: View {
     let word: String
     let imageName: String
     let modelName: String
-    let stars: Int
     let geo: GeometryProxy
     let isLastActivity: Bool
     let onContinue: () -> Void
@@ -872,9 +866,6 @@ private struct RewardView: View {
                 .scaleEffect(modelVisible ? 1.0 : 0.4).opacity(modelVisible ? 1.0 : 0)
                 .animation(.spring(response: 0.65, dampingFraction: 0.58).delay(0.1), value: modelVisible)
             #endif
-            StarRatingView(stars: stars, size: min(minDim * 0.065, 40))
-                .scaleEffect(labelVisible ? 1.0 : 0.6).opacity(labelVisible ? 1.0 : 0)
-                .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.4), value: labelVisible)
             Text(word)
                 .font(.app(size: min(minDim * 0.10, 60)))
                 .foregroundStyle(Color(red: 0.28, green: 0.24, blue: 0.20))

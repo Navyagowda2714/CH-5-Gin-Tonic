@@ -1,6 +1,16 @@
 import SwiftUI
 #if os(iOS)
 import UIKit
+
+func appTopSafeInset() -> CGFloat {
+    UIApplication.shared.connectedScenes
+        .compactMap { $0 as? UIWindowScene }
+        .flatMap { $0.windows }
+        .first(where: \.isKeyWindow)?
+        .safeAreaInsets.top ?? 0
+}
+#else
+func appTopSafeInset() -> CGFloat { 0 }
 #endif
 
 /// Kid-friendly back button matching the app's orange colour scheme.

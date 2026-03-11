@@ -69,7 +69,7 @@ struct AlphabetTraceView: View {
                 GeometryReader { geo in
                     VStack(spacing: 12) {
                         
-                        header
+                        header(geo: geo)
                         
                         traceBoard
                             .frame(
@@ -90,7 +90,7 @@ struct AlphabetTraceView: View {
     
     // MARK: - Header
     
-    private var header: some View {
+    private func header(geo: GeometryProxy) -> some View {
         VStack(spacing: 8) {
             HStack {
                 BackButton {
@@ -100,7 +100,7 @@ struct AlphabetTraceView: View {
                 Spacer()
             }
             .padding(.horizontal, 18)
-            .padding(.top, 8)
+            .padding(.top, max(appTopSafeInset() + 8, 8))
             
             VStack(spacing: 6) {
                 

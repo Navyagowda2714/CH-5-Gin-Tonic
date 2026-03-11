@@ -200,6 +200,7 @@ struct LearnWordsView: View {
 
     private func topBar(geo: GeometryProxy) -> some View {
         let minDim = min(geo.size.width, geo.size.height)
+        let topPad = max(appTopSafeInset() + 8, geo.size.height * 0.02)
         return HStack {
             BackButton { dismiss() }
             Spacer()
@@ -224,7 +225,7 @@ struct LearnWordsView: View {
             }
         }
         .padding(.horizontal, geo.size.width * 0.03)
-        .padding(.top, geo.size.height * 0.02)
+        .padding(.top, topPad)
         .padding(.bottom, geo.size.height * 0.01)
     }
 
@@ -353,21 +354,19 @@ struct LearnWordsView: View {
             }
             bounceMascot(height: -25)
             showMascotMessage("Yes! That's right!")
-            speaker.speak("Yes! That's right!")
             sparkleOrigin = CGPoint(x: slotFrame.midX, y: slotFrame.midY)
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { sparkleOrigin = nil }
             #if os(iOS)
             UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             #endif
-            // Wait for "Yes! That's right!" to finish before spelling
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                SoundPlayer.shared.play(.success)
-                speaker.spellThenSpeak(puzzle.word)
+            // Play one continuous recorded line: "Yes... B A T... bat"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                let clipDuration = speaker.playFillWordCelebration(puzzle.word)
                 canSkipToReward = true
-            }
-            // Auto-advance to reward after spelling completes
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.8) {
-                skipToReward()
+                let delay = max(clipDuration + 0.2, 1.8)
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    skipToReward()
+                }
             }
         } else {
             SoundPlayer.shared.play(.wrong)
@@ -377,10 +376,10 @@ struct LearnWordsView: View {
             if wrongCount >= 3 {
                 let hintMsg = "Look for the \(String(puzzle.missingLetter))!"
                 showMascotMessage(hintMsg)
-                speaker.speak(hintMsg)
+                speaker.playLookForLetter(puzzle.missingLetter)
             } else {
                 showMascotMessage("Try again!")
-                speaker.speak("Try again!")
+                speaker.playTryAgain()
             }
             #if os(iOS)
             UINotificationFeedbackGenerator().notificationOccurred(.error)
