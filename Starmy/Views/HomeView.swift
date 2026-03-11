@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("drawCompletedCount") private var drawCompleted = 0
     @AppStorage("fillCompletedCount") private var fillCompleted = 0
     @AppStorage("traceCompletedCount") private var traceCompleted = 0
@@ -136,10 +137,13 @@ struct HomeView: View {
                         .background(Circle().fill(Color.white.opacity(0.8)))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(musicOn ? "Mute sound" : "Turn on sound")
+                .accessibilityHint("Toggles app audio.")
                 .padding(.trailing, 20)
             }
             .padding(.top, 8)
         }
+        .appReduceMotion(reduceMotion)
     }
     @ViewBuilder
     private func cardsLayout(geo: GeometryProxy, isLand: Bool) -> some View {
@@ -287,6 +291,7 @@ enum HomeDestination: Hashable {
 // MARK: - Activity card
 
 private struct ActivityCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let title: String
     let imageName: String
     let progress: Int
@@ -374,6 +379,11 @@ private struct ActivityCard: View {
         .buttonStyle(.plain)
         .scaleEffect(pressed ? 0.95 : 1.0)
         .animation(.spring(response: 0.25, dampingFraction: 0.6), value: pressed)
+        .appReduceMotion(reduceMotion)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title) activity")
+        .accessibilityValue(isAllDone ? "Completed" : "\(progress) of \(total) completed")
+        .accessibilityHint("Double tap to open \(title.lowercased()).")
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in

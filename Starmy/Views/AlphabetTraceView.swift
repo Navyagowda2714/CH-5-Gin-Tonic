@@ -24,6 +24,7 @@ struct AlphabetTraceActivity: Identifiable, Hashable {
 
 struct AlphabetTraceView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     @AppStorage("traceCompletedCount") private var traceCompleted = 0
     
@@ -86,6 +87,7 @@ struct AlphabetTraceView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .appReduceMotion(reduceMotion)
     }
     
     // MARK: - Header
@@ -124,6 +126,9 @@ struct AlphabetTraceView: View {
                             .background(Circle().fill(Color.black.opacity(0.2)))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Play letter sound")
+                    .accessibilityValue(String(showUppercase ? item.upper : item.lower))
+                    .accessibilityHint("Plays the pronunciation of this letter.")
                 }
             }
         }
@@ -457,18 +462,30 @@ struct AlphabetTraceView: View {
                 clear()
             }
             
+            let palette: [(String, Color)] = [
+                ("Red", .red),
+                ("Blue", .blue),
+                ("Green", .green),
+                ("Orange", .orange),
+                ("Purple", .purple),
+                ("Pink", .pink),
+            ]
             HStack(spacing: 18) {
-                ForEach([Color.red, .blue, .green, .orange, .purple, .pink], id: \.self) { color in
-                    Circle()
-                        .fill(color)
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Circle()
-                                .stroke(selectedColor == color ? Color.black : Color.clear, lineWidth: 3)
-                        )
-                        .onTapGesture {
-                            selectedColor = color
-                        }
+                ForEach(Array(palette.enumerated()), id: \.offset) { _, item in
+                    Button {
+                        selectedColor = item.1
+                    } label: {
+                        Circle()
+                            .fill(item.1)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Circle()
+                                    .stroke(selectedColor == item.1 ? Color.black : Color.clear, lineWidth: 3)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(item.0) color")
+                    .accessibilityValue(selectedColor == item.1 ? "Selected" : "")
                 }
             }
             
@@ -495,6 +512,8 @@ struct AlphabetTraceView: View {
                             )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Letter \(String(showUppercase ? it.upper : it.lower))")
+                    .accessibilityHint("Switches tracing to this letter.")
                 }
             }
         }

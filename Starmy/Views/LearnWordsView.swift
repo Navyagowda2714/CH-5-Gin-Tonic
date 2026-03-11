@@ -18,6 +18,7 @@ private struct DragState {
 
 struct LearnWordsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var speaker = WordSpeaker()
 
     @AppStorage("fillCompletedCount") private var savedCount = 0
@@ -161,6 +162,7 @@ struct LearnWordsView: View {
         }
         .ignoresSafeArea(.all)
         .navigationBarHidden(true)
+        .appReduceMotion(reduceMotion)
         .onChange(of: puzzleState) { _, state in
             if state == .wrong {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
@@ -336,6 +338,16 @@ struct LearnWordsView: View {
                         }
                 )
                 .disabled(isRevealed)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Letter \(String(letter))")
+                .accessibilityHint("Double tap to try this letter in the missing slot.")
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction {
+                    guard !isRevealed else { return }
+                    SoundPlayer.shared.play(.tap)
+                    speaker.speakLetter(letter)
+                    handleDrop(letter)
+                }
             }
         }
     }

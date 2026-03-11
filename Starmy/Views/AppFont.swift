@@ -4,7 +4,7 @@ import SwiftUI
 
 extension Font {
     static func app(size: CGFloat, weight: AppFontWeight = .regular) -> Font {
-        .custom(weight.fontName, size: size)
+        .custom(weight.fontName, size: size, relativeTo: .body)
     }
 }
 
@@ -26,4 +26,18 @@ extension Color {
     static let appCardBorder = Color(red: 0.835, green: 0.686, blue: 0.537)
     static let appGoldTop = Color(red: 0.949, green: 0.788, blue: 0.298)
     static let appGoldBottom = Color(red: 0.878, green: 0.486, blue: 0.071)
+}
+
+extension View {
+    @ViewBuilder
+    func appReduceMotion(_ reduceMotion: Bool) -> some View {
+        if reduceMotion {
+            self.transaction { tx in
+                tx.disablesAnimations = true
+                tx.animation = nil
+            }
+        } else {
+            self
+        }
+    }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SplashView: View {
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var onFinished: () -> Void
 
     @StateObject private var speaker = WordSpeaker()
@@ -27,8 +28,10 @@ struct SplashView: View {
                     .clipped()
                     .ignoresSafeArea()
 
-                ForEach(sparkles) { sp in
-                    SparkleView(data: sp, geo: geo)
+                if !reduceMotion {
+                    ForEach(sparkles) { sp in
+                        SparkleView(data: sp, geo: geo)
+                    }
                 }
 
                 let isLand = geo.size.width > geo.size.height
@@ -75,22 +78,51 @@ struct SplashView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                guard titleOpacity > 0.5 else { return }
-                SoundPlayer.shared.play(.pop)
-                withAnimation(.easeIn(duration: 0.35)) {
-                    starOpacity  = 0
-                    titleOpacity = 0
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.40) {
-                    onFinished()
-                }
+                handleStartTap()
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Starmy. Tap to begin.")
+            .accessibilityHint("Opens the home screen.")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { handleStartTap() }
             .onAppear { startAnimations() }
         }
         .ignoresSafeArea()
+        .appReduceMotion(reduceMotion)
+    }
+
+    private func handleStartTap() {
+        guard titleOpacity > 0.5 else { return }
+        SoundPlayer.shared.play(.pop)
+        if reduceMotion {
+            starOpacity = 0
+            titleOpacity = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                onFinished()
+            }
+            return
+        }
+        withAnimation(.easeIn(duration: 0.35)) {
+            starOpacity  = 0
+            titleOpacity = 0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.40) {
+            onFinished()
+        }
     }
 
     private func startAnimations() {
+        if reduceMotion {
+            starScale = 1.0
+            starOpacity = 1.0
+            titleOpacity = 1.0
+            floatY = 0
+            tapPulse = 1.0
+            showGreeting = true
+            speaker.playWelcomeToStarmy()
+            return
+        }
+
         withAnimation(.spring(response: 0.7, dampingFraction: 0.55).delay(0.2)) {
             starScale   = 1.0
             starOpacity = 1.0
@@ -149,6 +181,7 @@ private struct SparkleData: Identifiable {
 // MARK: - Sparkle view
 
 private struct SparkleView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let data: SparkleData
     let geo:  GeometryProxy
 
@@ -169,6 +202,12 @@ private struct SparkleView: View {
     }
 
     private func animate() {
+        if reduceMotion {
+            opacity = 0.8
+            scale = 1.0
+            spin = 0
+            return
+        }
         let dur = Double.random(in: 1.4...2.2)
         withAnimation(
             .easeInOut(duration: dur)

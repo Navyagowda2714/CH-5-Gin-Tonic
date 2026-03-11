@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - MascotView
 
 struct MascotView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let size: CGFloat
     var speechText: String? = nil
     var showSpeech: Bool = false
@@ -34,6 +35,10 @@ struct MascotView: View {
             }
         }
         .onAppear {
+            if reduceMotion {
+                floatY = 0
+                return
+            }
             withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
                 floatY = -6
             }

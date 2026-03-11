@@ -17,6 +17,7 @@ func appTopSafeInset() -> CGFloat { 0 }
 struct BackButton: View {
     let action: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isPressed = false
 
     var body: some View {
@@ -46,6 +47,11 @@ struct BackButton: View {
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.88 : 1.0)
         .animation(.spring(response: 0.25, dampingFraction: 0.55), value: isPressed)
+        .appReduceMotion(reduceMotion)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Back")
+        .accessibilityHint("Returns to the previous screen.")
+        .accessibilityAddTraits(.isButton)
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in

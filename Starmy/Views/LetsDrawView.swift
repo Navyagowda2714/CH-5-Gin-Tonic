@@ -30,6 +30,7 @@ struct DrawActivity {
 
 struct LetsDrawView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var speaker = WordSpeaker()
 
     @AppStorage("drawCompletedCount") private var savedCount = 0
@@ -51,6 +52,9 @@ struct LetsDrawView: View {
         Color(red: 0.18, green: 0.65, blue: 0.35),
         Color(red: 0.90, green: 0.55, blue: 0.10),
         Color(red: 0.60, green: 0.30, blue: 0.70),
+    ]
+    private static let presetColorNames: [String] = [
+        "Red", "Blue", "Green", "Orange", "Purple",
     ]
 
     @State private var outlinePath: CGPath? = nil
@@ -177,6 +181,7 @@ struct LetsDrawView: View {
         }
         .ignoresSafeArea(.all)
         .navigationBarHidden(true)
+        .appReduceMotion(reduceMotion)
         .overlay {
             if showLeaveAlert {
                 LeaveDrawingAlert(
@@ -271,21 +276,27 @@ struct LetsDrawView: View {
         let minDim = min(geo.size.width, geo.size.height)
         let dotSize: CGFloat = min(minDim * 0.05, 34)
         HStack(spacing: minDim * 0.02) {
-            ForEach(Self.presetColors, id: \.self) { color in
-                Circle()
-                    .fill(color)
-                    .frame(width: dotSize, height: dotSize)
-                    .overlay(
-                        Circle()
-                            .strokeBorder(Color.white, lineWidth: selectedColor == color ? 3 : 0)
-                    )
-                    .shadow(color: selectedColor == color ? color.opacity(0.6) : .clear, radius: 6)
-                    .scaleEffect(selectedColor == color ? 1.15 : 1.0)
-                    .animation(.spring(response: 0.25, dampingFraction: 0.6), value: selectedColor)
-                    .onTapGesture {
+            ForEach(Array(Self.presetColors.enumerated()), id: \.offset) { index, color in
+                Button {
+                    if selectedColor != color {
                         selectedColor = color
                         SoundPlayer.shared.play(.tap)
                     }
+                } label: {
+                    Circle()
+                        .fill(color)
+                        .frame(width: dotSize, height: dotSize)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(Color.white, lineWidth: selectedColor == color ? 3 : 0)
+                        )
+                        .shadow(color: selectedColor == color ? color.opacity(0.6) : .clear, radius: 6)
+                        .scaleEffect(selectedColor == color ? 1.15 : 1.0)
+                        .animation(.spring(response: 0.25, dampingFraction: 0.6), value: selectedColor)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(Self.presetColorNames[index]) color")
+                .accessibilityValue(selectedColor == color ? "Selected" : "")
             }
 
             Spacer().frame(width: minDim * 0.02)
@@ -299,6 +310,8 @@ struct LetsDrawView: View {
             }
             .buttonStyle(.plain)
             .disabled(strokes.isEmpty || isComplete)
+            .accessibilityLabel("Undo stroke")
+            .accessibilityHint("Removes the last stroke.")
         }
         .padding(.horizontal, geo.size.width * 0.06)
     }
