@@ -190,7 +190,7 @@ final class WordSpeaker: NSObject, ObservableObject {
         switch upperWord {
         case "BAG":
             candidates = [
-                "voice_yes_thats_right_its",
+                "voice_yes_thats_right_its_2",
                 "yes that s right its",
                 "fill_word_bag",
                 "voice_yes_thats_right_its_2",
@@ -205,7 +205,7 @@ final class WordSpeaker: NSObject, ObservableObject {
         case "KEY":
             candidates = ["fill_word_key", "voice_yes_thats_right_its_6", "Yes That s right it -6"]
         case "PIG":
-            candidates = ["fill_word_pig", "voice_yes_thats_right_its_1"]
+            candidates = ["fill_word_pig", "voice_yes_thats_right_its"]
         case "SUN":
             candidates = ["fill_word_sun", "voice_yes_thats_right_its_7", "Yes That s right it -7"]
         default:
