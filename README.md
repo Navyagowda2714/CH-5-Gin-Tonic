@@ -21,6 +21,7 @@
 
 <br/><br/>
 
+<a href="#-getting-started"><b>Getting Started</b></a> •
 <a href="#-project-overview"><b>Overview</b></a> •
 <a href="#-problem-space"><b>Problem</b></a> •
 <a href="#-learning-experience-architecture"><b>Architecture</b></a> •
@@ -30,6 +31,31 @@
 <a href="#-contact"><b>Contact</b></a>
 
 </div>
+
+---
+
+
+<!-- quickstart:start -->
+# 🚀 Getting Started
+
+**Requirements:** macOS with **Xcode 26.1** or later (iOS 26.1 / visionOS 26.1 SDK). No third-party dependencies — SwiftUI, RealityKit, AVFoundation and bundled USDZ models, fonts and voice clips.
+
+```bash
+git clone https://github.com/Navyagowda2714/CH-5-Gin-Tonic.git
+cd CH-5-Gin-Tonic
+open starmy.xcodeproj
+```
+
+1. Select the **starmy** target → *Signing & Capabilities* → choose your own Team.
+2. Choose an iPad / iPhone simulator (or a device) and press **⌘R**.
+
+| Folder | What it is |
+|---|---|
+| `Starmy/` | App source (SwiftUI views, game logic) |
+| `Starmy/Models` | 3D USDZ objects used in the letter-finding activities |
+| `Starmy/Sounds/Voice` | Recorded voice prompts |
+| `Starmy/Fonts` | EasyReading font for dyslexia-friendly text |
+<!-- quickstart:end -->
 
 ---
 
